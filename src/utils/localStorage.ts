@@ -1,9 +1,10 @@
 
-import { Expense, Member } from '@/types';
+import { Expense, Member, Trip } from '@/types';
 
 // Local storage keys
 const MEMBERS_KEY = 'tripExpensePal-members';
 const EXPENSES_KEY = 'tripExpensePal-expenses';
+const TRIPS_KEY = 'tripExpensePal-trips';
 
 // Load members from local storage
 export const loadMembers = (): Member[] => {
@@ -45,11 +46,48 @@ export const saveExpenses = (expenses: Expense[]): void => {
   }
 };
 
+// Load trips from local storage
+export const loadTrips = (): Trip[] => {
+  try {
+    const storedTrips = localStorage.getItem(TRIPS_KEY);
+    return storedTrips ? JSON.parse(storedTrips) : [];
+  } catch (error) {
+    console.error('Error loading trips from local storage:', error);
+    return [];
+  }
+};
+
+// Save trips to local storage
+export const saveTrips = (trips: Trip[]): void => {
+  try {
+    localStorage.setItem(TRIPS_KEY, JSON.stringify(trips));
+  } catch (error) {
+    console.error('Error saving trips to local storage:', error);
+  }
+};
+
+// Get members for a specific trip
+export const getTripMembers = (tripId: string): Member[] => {
+  const allMembers = loadMembers();
+  const trip = loadTrips().find(t => t.id === tripId);
+  
+  if (!trip) return [];
+  
+  return allMembers.filter(member => trip.members.includes(member.id));
+};
+
+// Get expenses for a specific trip
+export const getTripExpenses = (tripId: string): Expense[] => {
+  const allExpenses = loadExpenses();
+  return allExpenses.filter(expense => expense.tripId === tripId);
+};
+
 // Clear all data from local storage
 export const clearAllData = (): void => {
   try {
     localStorage.removeItem(MEMBERS_KEY);
     localStorage.removeItem(EXPENSES_KEY);
+    localStorage.removeItem(TRIPS_KEY);
   } catch (error) {
     console.error('Error clearing data from local storage:', error);
   }

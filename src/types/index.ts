@@ -2,6 +2,7 @@
 export interface Member {
   id: string;
   name: string;
+  userId?: string; // Optional reference to a user account
 }
 
 export interface Expense {
@@ -15,6 +16,7 @@ export interface Expense {
   isSettlement?: boolean;
   shares?: { [participantId: string]: number }; // Optional: for uneven splits
   splitType?: 'equal' | 'uneven'; // To track how the expense is split
+  tripId: string; // Reference to the trip this expense belongs to
 }
 
 export type ExpenseCategory = 
@@ -51,4 +53,18 @@ export interface Currency {
 
 export interface Settings {
   currency: Currency;
+}
+
+export interface Trip {
+  id: string;
+  name: string;
+  description?: string;
+  dateCreated: string;
+  dateRange?: {
+    start: string;
+    end?: string;
+  };
+  ownerId: string; // User who created the trip
+  members: string[]; // Member IDs
+  isArchived?: boolean;
 }
