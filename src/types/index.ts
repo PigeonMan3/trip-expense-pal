@@ -42,3 +42,13 @@ export interface Debt {
   };
   amount: number;
 }
+
+export interface Currency {
+  code: string;
+  symbol: string;
+  name: string;
+}
+
+export interface Settings {
+  currency: Currency;
+}

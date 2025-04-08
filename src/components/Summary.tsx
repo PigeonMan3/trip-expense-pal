@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Balance, Debt, Member } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
+import { useSettings } from '@/contexts/SettingsContext';
+import { formatAmount } from '@/utils/currencies';
 
 interface SummaryProps {
   balances: Balance[];
@@ -14,13 +16,14 @@ interface SummaryProps {
 
 const Summary = ({ balances, debts, onSettleUp }: SummaryProps) => {
   const { toast } = useToast();
+  const { settings } = useSettings();
   const [activeTab, setActiveTab] = useState('balances');
 
   const handleSettleUp = (debt: Debt) => {
     onSettleUp(debt.from.id, debt.to.id, debt.amount);
     toast({
       title: 'Debt settled!',
-      description: `${debt.from.name} paid ${debt.to.name} $${debt.amount.toFixed(2)}`,
+      description: `${debt.from.name} paid ${debt.to.name} ${formatAmount(debt.amount, settings.currency)}`,
     });
   };
 
@@ -53,9 +56,9 @@ const Summary = ({ balances, debts, onSettleUp }: SummaryProps) => {
                     balance.amount > 0 ? 'text-green-600' : 
                     balance.amount < 0 ? 'text-red-600' : 'text-gray-600'
                   }`}>
-                    {balance.amount > 0 ? `+$${balance.amount.toFixed(2)}` : 
-                     balance.amount < 0 ? `-$${Math.abs(balance.amount).toFixed(2)}` : 
-                     `$${balance.amount.toFixed(2)}`}
+                    {balance.amount > 0 ? `+${formatAmount(balance.amount, settings.currency)}` : 
+                     balance.amount < 0 ? `-${formatAmount(Math.abs(balance.amount), settings.currency)}` : 
+                     formatAmount(balance.amount, settings.currency)}
                   </span>
                 </div>
               ))}
@@ -81,7 +84,7 @@ const Summary = ({ balances, debts, onSettleUp }: SummaryProps) => {
                     <span className="font-medium">{debt.to.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold">${debt.amount.toFixed(2)}</span>
+                    <span className="font-bold">{formatAmount(debt.amount, settings.currency)}</span>
                     <Button 
                       variant="outline" 
                       size="sm"

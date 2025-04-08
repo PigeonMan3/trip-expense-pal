@@ -3,6 +3,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Expense, Member } from '@/types';
 import { format, parseISO } from 'date-fns';
+import { useSettings } from '@/contexts/SettingsContext';
+import { formatAmount } from '@/utils/currencies';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -28,6 +30,8 @@ const getCategoryEmoji = (category: string): string => {
 };
 
 const ExpenseList = ({ expenses, members, onDeleteExpense }: ExpenseListProps) => {
+  const { settings } = useSettings();
+
   if (expenses.length === 0) {
     return (
       <Card className="p-4 shadow-sm">
@@ -69,7 +73,7 @@ const ExpenseList = ({ expenses, members, onDeleteExpense }: ExpenseListProps) =
               
               <div className="flex flex-col items-end">
                 <span className="font-bold text-md">
-                  ${expense.amount.toFixed(2)}
+                  {formatAmount(expense.amount, settings.currency)}
                 </span>
                 <Button 
                   variant="ghost" 
