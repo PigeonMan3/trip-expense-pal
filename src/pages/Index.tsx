@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import MemberList from '@/components/MemberList';
@@ -7,23 +8,23 @@ import Summary from '@/components/Summary';
 import Header from '@/components/Header';
 import { Member, Expense, Balance, Debt } from '@/types';
 import { calculateBalances, calculateDebts } from '@/utils/expenseCalculator';
-import { loadFromLocalStorage, saveToLocalStorage } from '@/utils/localStorage';
+import { loadMembers, saveMembers, loadExpenses, saveExpenses } from '@/utils/localStorage';
 
 const Index = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
   useEffect(() => {
-    const storedMembers = loadFromLocalStorage<Member[]>('members') || [];
+    const storedMembers = loadMembers() || [];
     setMembers(storedMembers);
 
-    const storedExpenses = loadFromLocalStorage<Expense[]>('expenses') || [];
+    const storedExpenses = loadExpenses() || [];
     setExpenses(storedExpenses);
   }, []);
 
   useEffect(() => {
-    saveToLocalStorage('members', members);
-    saveToLocalStorage('expenses', expenses);
+    saveMembers(members);
+    saveExpenses(expenses);
   }, [members, expenses]);
 
   const handleAddMember = (name: string) => {
@@ -77,7 +78,7 @@ const Index = () => {
           <MemberList 
             members={members} 
             onAddMember={handleAddMember} 
-            onDeleteMember={handleDeleteMember} 
+            onRemoveMember={handleDeleteMember} 
           />
         </div>
         
