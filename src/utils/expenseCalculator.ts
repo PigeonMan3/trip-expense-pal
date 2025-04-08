@@ -16,19 +16,30 @@ export const calculateBalances = (expenses: Expense[], members: Member[]): Balan
     if (expense.isSettlement) return;
     
     const payer = expense.paidBy;
-    const participantsCount = expense.participants.length;
-    
-    if (participantsCount === 0) return;
-    
-    const sharePerPerson = expense.amount / participantsCount;
     
     // Add the full amount to the payer
     balances[payer] += expense.amount;
     
-    // Subtract share from each participant
-    expense.participants.forEach(participantId => {
-      balances[participantId] -= sharePerPerson;
-    });
+    // For uneven splits
+    if (expense.splitType === 'uneven' && expense.shares) {
+      // Subtract the specific share from each participant
+      Object.entries(expense.shares).forEach(([participantId, share]) => {
+        balances[participantId] -= share;
+      });
+    } 
+    // For equal splits
+    else {
+      const participantsCount = expense.participants.length;
+      
+      if (participantsCount === 0) return;
+      
+      const sharePerPerson = expense.amount / participantsCount;
+      
+      // Subtract equal share from each participant
+      expense.participants.forEach(participantId => {
+        balances[participantId] -= sharePerPerson;
+      });
+    }
   });
 
   // Create the balance objects with names

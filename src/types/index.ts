@@ -13,6 +13,8 @@ export interface Expense {
   category: ExpenseCategory;
   participants: string[]; // member ids
   isSettlement?: boolean;
+  shares?: { [participantId: string]: number }; // Optional: for uneven splits
+  splitType?: 'equal' | 'uneven'; // To track how the expense is split
 }
 
 export type ExpenseCategory = 

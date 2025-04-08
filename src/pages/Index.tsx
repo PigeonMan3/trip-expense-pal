@@ -95,6 +95,8 @@ const Index = () => {
     date: string;
     category: ExpenseCategory;
     participants: string[];
+    splitType: 'equal' | 'uneven';
+    shares?: { [participantId: string]: number };
   }) => {
     const newExpense: Expense = {
       ...expenseData,
