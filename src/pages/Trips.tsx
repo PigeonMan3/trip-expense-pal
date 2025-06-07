@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import TripList from '@/components/trips/TripList';
 import Header from '@/components/Header';
 import { Trip } from '@/types';
-import { loadTrips, saveTrips } from '@/utils/localStorage';
+import { loadTrips, saveTrip } from '@/utils/supabaseStorage';
 import { Button } from '@/components/ui/button';
 
 const Trips = () => {
@@ -21,19 +21,17 @@ const Trips = () => {
 
   useEffect(() => {
     if (user) {
-      // Load all trips and filter for the current user
-      const allTrips = loadTrips();
-      const userTrips = allTrips.filter(trip => 
-        trip.ownerId === user.id || trip.members.includes(user.id)
-      );
-      setTrips(userTrips);
+      loadTrips(user.id).then(setTrips);
     }
   }, [user]);
 
-  const handleAddTrip = (newTrip: Trip) => {
-    const updatedTrips = [...trips, newTrip];
-    setTrips(updatedTrips);
-    saveTrips([...loadTrips(), newTrip]);
+  const handleAddTrip = async (newTrip: Omit<Trip, 'id' | 'dateCreated'>) => {
+    if (!user) return;
+    
+    const savedTrip = await saveTrip(newTrip, user.id);
+    if (savedTrip) {
+      setTrips(prev => [...prev, savedTrip]);
+    }
   };
 
   const handleLogout = () => {
