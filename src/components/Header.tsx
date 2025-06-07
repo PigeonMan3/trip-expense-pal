@@ -33,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
             </HoverCardTrigger>
             <HoverCardContent className="w-48">
               <div className="space-y-2">
-                <p className="font-medium">{user.name}</p>
+                <p className="font-medium">{user.user_metadata?.name || 'User'}</p>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
                 <Button 
                   variant="outline" 
