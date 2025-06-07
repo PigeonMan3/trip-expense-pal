@@ -43,8 +43,8 @@ const Index = () => {
     ));
   };
 
-  const handleAddExpense = (expense: Omit<Expense, 'id'>) => {
-    const newExpense: Expense = { id: uuidv4(), ...expense };
+  const handleAddExpense = (expense: Omit<Expense, 'id' | 'tripId'>) => {
+    const newExpense: Expense = { id: uuidv4(), tripId: 'default-trip', ...expense };
     setExpenses([...expenses, newExpense]);
   };
 
@@ -64,6 +64,7 @@ const Index = () => {
       participants: [fromId, toId],
       isSettlement: true,
       splitType: 'equal',
+      tripId: 'default-trip',
     };
     setExpenses([...expenses, settlementExpense]);
   };

@@ -12,8 +12,17 @@ export const calculateBalances = (expenses: Expense[], members: Member[]): Balan
 
   // Calculate balances based on expenses
   expenses.forEach(expense => {
-    // Skip settlement expenses for this calculation
-    if (expense.isSettlement) return;
+    // Handle settlement expenses differently
+    if (expense.isSettlement) {
+      // For settlements, the payer reduces their debt and the receiver increases theirs
+      const payer = expense.paidBy;
+      const receiver = expense.participants.find(p => p !== payer);
+      if (receiver) {
+        balances[payer] += expense.amount; // Payer gets credit
+        balances[receiver] -= expense.amount; // Receiver owes less
+      }
+      return;
+    }
     
     const payer = expense.paidBy;
     
