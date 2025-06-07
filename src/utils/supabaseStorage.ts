@@ -26,8 +26,26 @@ export const loadTrips = async (userId: string): Promise<Trip[]> => {
       name: trip.name,
       description: trip.description || '',
       ownerId: trip.user_id,
-      members: trip.members?.map((m: any) => m.user_id) || [],
-      dateCreated: trip.created_at
+      members: trip.members?.map((m: any) => m.id) || [],
+      dateCreated: trip.created_at,
+      membersData: trip.members?.map((m: any) => ({
+        id: m.id,
+        name: m.name,
+        userId: m.user_id
+      })) || [],
+      expensesData: trip.expenses?.map((e: any) => ({
+        id: e.id,
+        description: e.description,
+        amount: e.amount,
+        paidBy: e.paid_by,
+        participants: e.participants,
+        category: e.category,
+        splitType: e.split_type,
+        shares: e.shares,
+        isSettlement: e.is_settlement,
+        date: e.date,
+        tripId: trip.id
+      })) || []
     })) || [];
   } catch (error) {
     console.error('Error loading trips:', error);

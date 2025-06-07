@@ -4,13 +4,11 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   loadTrips, 
-  loadMembers, 
-  loadExpenses,
-  saveMembers,
-  saveExpenses,
-  getTripMembers,
-  getTripExpenses
-} from '@/utils/localStorage';
+  saveExpense,
+  deleteExpense as deleteExpenseFromDB,
+  addMember,
+  removeMember
+} from '@/utils/supabaseStorage';
 import { Member, Expense, Trip, Balance, Debt } from '@/types';
 import { calculateBalances, calculateDebts } from '@/utils/expenseCalculator';
 import { Button } from '@/components/ui/button';
@@ -54,52 +52,41 @@ const TripDetail = () => {
       return;
     }
 
-    if (!tripId) {
+    if (!tripId || !user) {
       navigate('/trips');
       return;
     }
 
-    const trips = loadTrips();
-    const currentTrip = trips.find(t => t.id === tripId);
-    
-    if (!currentTrip) {
-      toast({
-        variant: 'destructive',
-        title: 'Trip not found',
-        description: 'The requested trip does not exist or has been deleted.',
-      });
-      navigate('/trips');
-      return;
-    }
+    const loadTripData = async () => {
+      const trips = await loadTrips(user.id);
+      const currentTrip = trips.find(t => t.id === tripId);
+      
+      if (!currentTrip) {
+        toast({
+          variant: 'destructive',
+          title: 'Trip not found',
+          description: 'The requested trip does not exist or has been deleted.',
+        });
+        navigate('/trips');
+        return;
+      }
 
-    setTrip(currentTrip);
-    setMembers(getTripMembers(tripId));
-    setExpenses(getTripExpenses(tripId));
-  }, [tripId, isAuthenticated, navigate, toast]);
-
-  const handleAddMember = (name: string) => {
-    if (!trip) return;
-    
-    const newMember: Member = { 
-      id: uuidv4(), 
-      name,
-      userId: user?.id // Link member to current user if appropriate
+      setTrip(currentTrip);
+      // Set members and expenses from loaded trip data
+      setMembers((currentTrip as any).membersData || []);
+      setExpenses((currentTrip as any).expensesData || []);
     };
+
+    loadTripData();
+  }, [tripId, isAuthenticated, navigate, toast, user]);
+
+  const handleAddMember = async (name: string) => {
+    if (!trip || !tripId) return;
     
-    const allMembers = loadMembers();
-    const updatedMembers = [...allMembers, newMember];
-    saveMembers(updatedMembers);
-    
-    // Update trip members list
-    const allTrips = loadTrips();
-    const updatedTrip = { ...trip, members: [...trip.members, newMember.id] };
-    const updatedTrips = allTrips.map(t => t.id === trip.id ? updatedTrip : t);
-    
-    // Save to localStorage
-    setTrip(updatedTrip);
-    setMembers([...members, newMember]);
-    
-    localStorage.setItem('tripExpensePal-trips', JSON.stringify(updatedTrips));
+    const newMember = await addMember(tripId, name, user?.id);
+    if (newMember) {
+      setMembers([...members, newMember]);
+    }
     
     setNewMemberName('');
     setIsAddMemberDialogOpen(false);
@@ -115,106 +102,62 @@ const TripDetail = () => {
     }
   };
 
-  const handleDeleteMember = (id: string) => {
-    if (!trip) return;
-    
-    // Remove member from list
-    const updatedMembers = members.filter(member => member.id !== id);
-    setMembers(updatedMembers);
-    
-    // Update all members in localStorage
-    const allMembers = loadMembers();
-    const filteredMembers = allMembers.filter(m => m.id !== id);
-    saveMembers(filteredMembers);
-    
-    // Update trip members list
-    const updatedTrip = { 
-      ...trip, 
-      members: trip.members.filter(memberId => memberId !== id)
-    };
-    
-    const allTrips = loadTrips();
-    const updatedTrips = allTrips.map(t => t.id === trip.id ? updatedTrip : t);
-    localStorage.setItem('tripExpensePal-trips', JSON.stringify(updatedTrips));
-    
-    setTrip(updatedTrip);
-    
-    // Also remove expenses paid by or shared with the deleted member
-    const updatedExpenses = expenses.filter(
-      expense => expense.paidBy !== id && !expense.participants.includes(id)
-    );
-    
-    setExpenses(updatedExpenses);
-    
-    // Update all expenses in localStorage
-    const allExpenses = loadExpenses();
-    const filteredExpenses = allExpenses.filter(
-      e => !(e.tripId === trip.id && (e.paidBy === id || e.participants.includes(id)))
-    );
-    
-    saveExpenses(filteredExpenses);
+  const handleDeleteMember = async (id: string) => {
+    const success = await removeMember(id);
+    if (success) {
+      setMembers(members.filter(member => member.id !== id));
+      // Also remove expenses paid by or shared with the deleted member
+      setExpenses(expenses.filter(
+        expense => expense.paidBy !== id && !expense.participants.includes(id)
+      ));
+    }
   };
 
-  const handleAddExpense = (expense: Omit<Expense, 'id' | 'tripId'>) => {
-    if (!trip) return;
+  const handleAddExpense = async (expense: Omit<Expense, 'id' | 'tripId'>) => {
+    if (!trip || !user) return;
     
-    const newExpense: Expense = { 
-      id: uuidv4(), 
-      ...expense,
-      tripId: trip.id
-    };
-    
-    const updatedExpenses = [...expenses, newExpense];
-    setExpenses(updatedExpenses);
-    
-    // Save to localStorage
-    const allExpenses = loadExpenses();
-    saveExpenses([...allExpenses, newExpense]);
-    
-    toast({
-      title: 'Expense added',
-      description: `${expense.description} has been added to the trip.`,
-    });
+    const expenseWithTripId = { ...expense, tripId: trip.id };
+    const savedExpense = await saveExpense(expenseWithTripId, trip.id, user.id);
+    if (savedExpense) {
+      setExpenses([...expenses, savedExpense]);
+      toast({
+        title: 'Expense added',
+        description: `${expense.description} has been added to the trip.`,
+      });
+    }
   };
 
-  const handleDeleteExpense = (id: string) => {
-    const updatedExpenses = expenses.filter(expense => expense.id !== id);
-    setExpenses(updatedExpenses);
-    
-    // Update localStorage
-    const allExpenses = loadExpenses();
-    const filteredExpenses = allExpenses.filter(e => e.id !== id);
-    saveExpenses(filteredExpenses);
+  const handleDeleteExpense = async (id: string) => {
+    const success = await deleteExpenseFromDB(id);
+    if (success) {
+      setExpenses(expenses.filter(expense => expense.id !== id));
+    }
   };
 
-  const handleSettleUp = (fromId: string, toId: string, amount: number) => {
-    if (!trip) return;
+  const handleSettleUp = async (fromId: string, toId: string, amount: number) => {
+    if (!trip || !user) return;
     
     // Create a settlement expense
-    const settlementExpense: Expense = {
-      id: uuidv4(),
+    const settlementExpense = {
       description: `Settlement from ${members.find(m => m.id === fromId)?.name} to ${members.find(m => m.id === toId)?.name}`,
       amount: amount,
       paidBy: fromId,
       date: new Date().toISOString(),
-      category: 'settlement',
+      category: 'settlement' as const,
       participants: [fromId, toId],
       isSettlement: true,
+      splitType: 'equal' as const,
       tripId: trip.id,
-      splitType: 'equal',
     };
     
-    const updatedExpenses = [...expenses, settlementExpense];
-    setExpenses(updatedExpenses);
-    
-    // Save to localStorage
-    const allExpenses = loadExpenses();
-    saveExpenses([...allExpenses, settlementExpense]);
-    
-    toast({
-      title: 'Settlement recorded',
-      description: `A settlement of ${amount} has been recorded.`,
-    });
+    const savedExpense = await saveExpense(settlementExpense, trip.id, user.id);
+    if (savedExpense) {
+      setExpenses([...expenses, savedExpense]);
+      toast({
+        title: 'Settlement recorded',
+        description: `A settlement of ${amount} has been recorded.`,
+      });
+    }
   };
 
   const balances: Balance[] = calculateBalances(expenses, members);
