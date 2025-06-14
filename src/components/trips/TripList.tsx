@@ -28,6 +28,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { calculateDebts, calculateBalances } from '@/utils/expenseCalculator';
+import { QuickAddExpense } from '@/components/QuickAddExpense';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TripListProps {
   trips: (Trip & { 
@@ -41,9 +43,11 @@ interface TripListProps {
 const TripList: React.FC<TripListProps> = ({ trips, onAddTrip, onTogglePin }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newTripName, setNewTripName] = useState('');
   const [newTripDescription, setNewTripDescription] = useState('');
+  const [quickExpenseOpen, setQuickExpenseOpen] = useState(false);
 
   const getUnsettledDebtsCount = (trip: Trip & { membersData?: Member[]; expensesData?: Expense[]; }) => {
     if (!trip.membersData || !trip.expensesData || trip.membersData.length === 0) return 0;
@@ -116,6 +120,7 @@ const TripList: React.FC<TripListProps> = ({ trips, onAddTrip, onTogglePin }) =>
           <Button
             variant="outline"
             className="hidden md:flex items-center gap-2 bg-gradient-to-r from-secondary/50 to-secondary/80 hover:from-secondary/70 hover:to-secondary/90 border-secondary"
+            onClick={() => setQuickExpenseOpen(true)}
           >
             <Plus className="h-4 w-4" />
             Quick Expense
@@ -221,6 +226,13 @@ const TripList: React.FC<TripListProps> = ({ trips, onAddTrip, onTogglePin }) =>
           ))}
         </div>
       )}
+      
+      {/* Quick Add Expense Modal */}
+      <QuickAddExpense 
+        isOpen={quickExpenseOpen} 
+        onOpenChange={setQuickExpenseOpen}
+        triggerButton={null}
+      />
     </div>
   );
 };

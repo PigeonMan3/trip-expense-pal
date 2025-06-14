@@ -21,9 +21,19 @@ import { AddExpenseForm } from './AddExpenseForm';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Plus } from 'lucide-react';
 
-export const QuickAddExpense = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface QuickAddExpenseProps {
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  triggerButton?: React.ReactNode | null;
+}
+
+export const QuickAddExpense = ({ isOpen: controlledOpen, onOpenChange, triggerButton }: QuickAddExpenseProps = {}) => {
+  const [internalOpen, setInternalOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  // Use controlled state if provided, otherwise use internal state
+  const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setIsOpen = onOpenChange || setInternalOpen;
 
   const handleExpenseAdded = () => {
     // Data will be re-fetched by the pages if needed.
@@ -33,7 +43,7 @@ export const QuickAddExpense = () => {
 
   const close = () => setIsOpen(false);
 
-  const trigger = (
+  const defaultTrigger = (
     <Button
       aria-label="Quick add expense"
       className="fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-transform hover:scale-105 active:scale-95 md:hidden"
@@ -41,6 +51,9 @@ export const QuickAddExpense = () => {
       <Plus className="h-6 w-6" />
     </Button>
   );
+
+  // Use provided trigger button or default one, unless explicitly set to null
+  const trigger = triggerButton === null ? null : (triggerButton || defaultTrigger);
 
   const content = (
     <div className="p-4 md:p-0">
@@ -51,9 +64,7 @@ export const QuickAddExpense = () => {
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
-        <DrawerTrigger asChild>
-          {trigger}
-        </DrawerTrigger>
+        {trigger && <DrawerTrigger asChild>{trigger}</DrawerTrigger>}
         <DrawerContent>
           <DrawerHeader className="text-left">
             <DrawerTitle>Add New Expense</DrawerTitle>
@@ -74,9 +85,7 @@ export const QuickAddExpense = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add New Expense</DialogTitle>
