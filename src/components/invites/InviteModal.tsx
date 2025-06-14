@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Search, User, Mail, Check } from 'lucide-react';
 import { useSendInvite, useUserSearch, UserSearchResult } from '@/hooks/useInvites';
+import { useToast } from '@/hooks/use-toast';
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export const InviteModal = ({ isOpen, onClose, tripId }: InviteModalProps) => {
   
   const sendInvite = useSendInvite();
   const { data: searchResults = [] } = useUserSearch(searchQuery);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isOpen) {
@@ -51,12 +53,40 @@ export const InviteModal = ({ isOpen, onClose, tripId }: InviteModalProps) => {
         sendInvite.mutate({
           tripId,
           userId: selectedUser.id,
+        }, {
+          onSuccess: () => {
+            toast({
+              title: 'Invite sent!',
+              description: `Invitation sent to ${selectedUser.name}`,
+            });
+          },
+          onError: () => {
+            toast({
+              variant: 'destructive',
+              title: 'Error',
+              description: 'Failed to send invitation',
+            });
+          },
         });
       } else if (searchQuery.includes('@')) {
         // If it's an email, send invite by email
         sendInvite.mutate({
           tripId,
           email: searchQuery,
+        }, {
+          onSuccess: () => {
+            toast({
+              title: 'Invite sent!',
+              description: `Invitation sent to ${searchQuery}`,
+            });
+          },
+          onError: () => {
+            toast({
+              variant: 'destructive',
+              title: 'Error',
+              description: 'Failed to send invitation',
+            });
+          },
         });
       } else {
         return; // No valid user or email

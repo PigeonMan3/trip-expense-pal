@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Search, User, Mail, Check } from 'lucide-react';
 import { Member } from '@/types';
 import { useSendInvite, useUserSearch, useAddPlaceholder, UserSearchResult } from '@/hooks/useInvites';
+import { useToast } from '@/hooks/use-toast';
 
 interface MemberListProps {
   members: Member[];
@@ -26,6 +27,7 @@ const MemberList = ({ members, onAddMember, onRemoveMember, tripId }: MemberList
   const sendInvite = useSendInvite();
   const addPlaceholder = useAddPlaceholder();
   const { data: searchResults = [] } = useUserSearch(searchQuery);
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,11 +43,39 @@ const MemberList = ({ members, onAddMember, onRemoveMember, tripId }: MemberList
         sendInvite.mutate({
           tripId,
           userId: selectedUser.id,
+        }, {
+          onSuccess: () => {
+            toast({
+              title: 'Invite sent!',
+              description: `Invitation sent to ${selectedUser.name}`,
+            });
+          },
+          onError: () => {
+            toast({
+              variant: 'destructive',
+              title: 'Error',
+              description: 'Failed to send invitation',
+            });
+          },
         });
       } else if (searchQuery.includes('@')) {
         sendInvite.mutate({
           tripId,
           email: searchQuery,
+        }, {
+          onSuccess: () => {
+            toast({
+              title: 'Invite sent!',
+              description: `Invitation sent to ${searchQuery}`,
+            });
+          },
+          onError: () => {
+            toast({
+              variant: 'destructive',
+              title: 'Error',
+              description: 'Failed to send invitation',
+            });
+          },
         });
       } else {
         return;
