@@ -14,6 +14,7 @@ export interface UserSearchResult {
   id: string;
   name: string;
   email: string;
+  username: string;
 }
 
 // Fetch pending invites for a specific trip
@@ -51,7 +52,7 @@ export const usePendingInvites = (tripId?: string) => {
   });
 };
 
-// Search users by name
+// Search users by name, username, or email
 export const useUserSearch = (searchQuery: string) => {
   return useQuery({
     queryKey: ['userSearch', searchQuery],
@@ -62,8 +63,8 @@ export const useUserSearch = (searchQuery: string) => {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, name')
-        .or(`name.ilike.%${searchQuery}%`)
+        .select('user_id, name, display_name, username, email')
+        .or(`name.ilike.%${searchQuery}%,display_name.ilike.%${searchQuery}%,username.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
         .neq('user_id', user.user?.id)
         .limit(10);
 
@@ -71,8 +72,9 @@ export const useUserSearch = (searchQuery: string) => {
 
       return data.map((profile: any) => ({
         id: profile.user_id,
-        name: profile.name,
-        email: '',
+        name: profile.display_name || profile.name,
+        email: profile.email,
+        username: profile.username,
       })) as UserSearchResult[];
     },
     enabled: searchQuery.length >= 2,

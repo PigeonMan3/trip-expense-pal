@@ -58,7 +58,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
             </HoverCardTrigger>
             <HoverCardContent className="w-48 bg-gradient-to-br from-card to-secondary/20 border-primary/20">
               <div className="space-y-2">
-                <p className="font-medium">👋 {user.user_metadata?.name || 'User'}</p>
+                <p className="font-medium">👋 {user.user_metadata?.display_name || user.user_metadata?.name || 'User'}</p>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
                 <Button 
                   variant="outline" 

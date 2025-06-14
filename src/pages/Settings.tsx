@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ChevronLeft } from 'lucide-react';
 import { useSettings } from '@/contexts/SettingsContext';
 import { currencies } from '@/utils/currencies';
+import { ProfileSettings } from '@/components/profile/ProfileSettings';
 
 const Settings = () => {
   const { settings, updateCurrency } = useSettings();
@@ -29,39 +30,43 @@ const Settings = () => {
         <h1 className="text-2xl font-bold">Settings</h1>
       </div>
 
-      <Card className="p-4 shadow-sm">
-        <h2 className="text-xl font-medium mb-4">Currency Preferences</h2>
+      <div className="space-y-6">
+        <ProfileSettings />
         
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Display Currency
-            </label>
-            <Select 
-              value={settings.currency.code}
-              onValueChange={handleCurrencyChange}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select currency" />
-              </SelectTrigger>
-              <SelectContent>
-                {currencies.map((currency) => (
-                  <SelectItem key={currency.code} value={currency.code}>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{currency.symbol}</span>
-                      <span>{currency.name}</span>
-                      <span className="text-muted-foreground ml-1">({currency.code})</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-muted-foreground mt-1">
-              Currency used to display all expenses and balances.
-            </p>
+        <Card className="p-4 shadow-sm">
+          <h2 className="text-xl font-medium mb-4">Currency Preferences</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Display Currency
+              </label>
+              <Select 
+                value={settings.currency.code}
+                onValueChange={handleCurrencyChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map((currency) => (
+                    <SelectItem key={currency.code} value={currency.code}>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{currency.symbol}</span>
+                        <span>{currency.name}</span>
+                        <span className="text-muted-foreground ml-1">({currency.code})</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+                </Select>
+              <p className="text-sm text-muted-foreground mt-1">
+                Currency used to display all expenses and balances.
+              </p>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };
