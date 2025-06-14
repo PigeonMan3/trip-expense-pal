@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Trip, Expense, Member } from '@/types';
+import { Trip, Expense, Member, Budget } from '@/types';
 
 // Trip operations
 export const loadTrips = async (userId: string): Promise<Trip[]> => {
@@ -208,6 +208,82 @@ export const removeMember = async (memberId: string): Promise<boolean> => {
     return !error;
   } catch (error) {
     console.error('Error removing member:', error);
+    return false;
+  }
+};
+
+// Budget operations
+export const loadBudget = async (tripId: string, userId: string): Promise<Budget | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('budgets')
+      .select('*')
+      .eq('trip_id', tripId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) return null;
+
+    return {
+      id: data.id,
+      tripId: data.trip_id,
+      userId: data.user_id,
+      totalBudget: data.total_budget,
+      categoryBudgets: (data.category_budgets as { [category: string]: number }) || {},
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
+    };
+  } catch (error) {
+    console.error('Error loading budget:', error);
+    return null;
+  }
+};
+
+export const saveBudget = async (budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>): Promise<Budget | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('budgets')
+      .insert({
+        trip_id: budget.tripId,
+        user_id: budget.userId,
+        total_budget: budget.totalBudget,
+        category_budgets: budget.categoryBudgets
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: data.id,
+      tripId: data.trip_id,
+      userId: data.user_id,
+      totalBudget: data.total_budget,
+      categoryBudgets: (data.category_budgets as { [category: string]: number }) || {},
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
+    };
+  } catch (error) {
+    console.error('Error saving budget:', error);
+    return null;
+  }
+};
+
+export const updateBudget = async (budget: Budget): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('budgets')
+      .update({
+        total_budget: budget.totalBudget,
+        category_budgets: budget.categoryBudgets
+      })
+      .eq('id', budget.id);
+
+    return !error;
+  } catch (error) {
+    console.error('Error updating budget:', error);
     return false;
   }
 };

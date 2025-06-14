@@ -68,3 +68,22 @@ export interface Trip {
   members: string[]; // Member IDs
   isArchived?: boolean;
 }
+
+export interface Budget {
+  id: string;
+  tripId: string;
+  userId: string;
+  totalBudget: number;
+  categoryBudgets: { [category: string]: number };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BudgetSummary {
+  category: string;
+  budgeted: number;
+  spent: number;
+  remaining: number;
+  percentage: number;
+  isOverBudget: boolean;
+}

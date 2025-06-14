@@ -8,14 +8,19 @@ import {
   updateExpense,
   deleteExpense as deleteExpenseFromDB,
   addMember,
-  removeMember
+  removeMember,
+  loadBudget,
+  saveBudget,
+  updateBudget
 } from '@/utils/supabaseStorage';
-import { Member, Expense, Trip, Balance, Debt } from '@/types';
+import { Member, Expense, Trip, Balance, Debt, Budget } from '@/types';
 import { calculateBalances, calculateDebts } from '@/utils/expenseCalculator';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, UserPlus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Home, Receipt, Clock } from "lucide-react";
+import { Users, Home, Receipt, Clock, DollarSign } from "lucide-react";
+import BudgetOverview from '@/components/budget/BudgetOverview';
+import CategoryExpenses from '@/components/budget/CategoryExpenses';
 import Header from '@/components/Header';
 import MemberList from '@/components/MemberList';
 import ExpenseForm from '@/components/ExpenseForm';
@@ -49,6 +54,8 @@ const TripDetail = () => {
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
   const [newMemberName, setNewMemberName] = useState('');
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [budget, setBudget] = useState<Budget | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -79,6 +86,10 @@ const TripDetail = () => {
       // Set members and expenses from loaded trip data
       setMembers((currentTrip as any).membersData || []);
       setExpenses((currentTrip as any).expensesData || []);
+      
+      // Load budget
+      const tripBudget = await loadBudget(tripId, user.id);
+      setBudget(tripBudget);
     };
 
     loadTripData();
@@ -224,6 +235,10 @@ const TripDetail = () => {
             <Receipt className="h-4 w-4" />
             <span>Expenses</span>
           </TabsTrigger>
+          <TabsTrigger value="budget" className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            <span>Budget</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* Dashboard Tab */}
@@ -304,6 +319,41 @@ const TripDetail = () => {
               onEditExpense={handleEditExpense}
             />
           </div>
+        </TabsContent>
+
+        {/* Budget Tab */}
+        <TabsContent value="budget" className="mt-4">
+          {selectedCategory ? (
+            <CategoryExpenses
+              category={selectedCategory}
+              expenses={expenses}
+              members={members}
+              onBack={() => setSelectedCategory(null)}
+              onEditExpense={handleEditExpense}
+            />
+          ) : (
+            <BudgetOverview
+              budget={budget}
+              expenses={expenses}
+              onBudgetUpdate={async (updatedBudget) => {
+                if (!trip || !user) return;
+                if (budget) {
+                  await updateBudget(updatedBudget);
+                } else {
+                  const newBudget = await saveBudget({
+                    tripId: trip.id,
+                    userId: user.id,
+                    totalBudget: updatedBudget.totalBudget,
+                    categoryBudgets: updatedBudget.categoryBudgets
+                  });
+                  if (newBudget) setBudget(newBudget);
+                  return;
+                }
+                setBudget(updatedBudget);
+              }}
+              onCategorySelect={setSelectedCategory}
+            />
+          )}
         </TabsContent>
       </Tabs>
 
