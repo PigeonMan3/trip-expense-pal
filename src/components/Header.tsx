@@ -33,11 +33,11 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
       <div className="flex items-center gap-2">
         <Button 
           variant="outline" 
-          size="icon" 
           className="hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 transition-all duration-200 relative"
           onClick={() => setInvitesModalOpen(true)}
         >
-          <Mail className="h-4 w-4" />
+          <Mail className="h-4 w-4 mr-2" />
+          Invites
           {receivedInvites && receivedInvites.length > 0 && (
             <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full text-xs flex items-center justify-center text-white">
               {receivedInvites.length}
