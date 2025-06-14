@@ -18,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   return (
     <header className="mb-6 flex justify-between items-center">
       <div>
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in">
+        <h1 className="text-3xl font-bold text-foreground animate-fade-in">
           {title}
         </h1>
         <p className="text-sm text-muted-foreground bg-secondary/30 px-3 py-1 rounded-full w-fit mt-2">

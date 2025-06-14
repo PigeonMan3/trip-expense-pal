@@ -82,7 +82,7 @@ const TripList: React.FC<TripListProps> = ({ trips, onAddTrip }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold text-foreground">
           ✈️ Your Adventures
         </h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -138,7 +138,7 @@ const TripList: React.FC<TripListProps> = ({ trips, onAddTrip }) => {
             <Link key={trip.id} to={`/trips/${trip.id}`} className="block group">
               <Card className="h-full hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-card to-card/80 border-primary/20 hover:border-primary/40 animate-fade-in group-hover:shadow-primary/25" style={{ animationDelay: `${index * 100}ms` }}>
                 <CardHeader className="pb-3">
-                  <CardTitle className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:from-accent group-hover:to-primary transition-all duration-300">
+                  <CardTitle className="text-foreground group-hover:text-primary transition-colors duration-300">
                     {trip.name}
                   </CardTitle>
                   {trip.description && (
