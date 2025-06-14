@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Trip, Expense, Member, Budget } from '@/types';
+import { Trip, Expense, Member, Budget, ExpenseCategory } from '@/types';
 
 // Trip operations
 export const loadTrips = async (userId: string): Promise<Trip[]> => {
@@ -95,6 +95,63 @@ export const saveTrip = async (trip: Omit<Trip, 'id' | 'dateCreated'>, userId: s
 };
 
 // Expense operations
+export const loadMembersForTrip = async (tripId: string): Promise<Member[]> => {
+  const { data, error } = await supabase
+    .from('members')
+    .select('id, name, user_id')
+    .eq('trip_id', tripId);
+
+  if (error) {
+    console.error('Error fetching members:', error);
+    return [];
+  }
+
+  return data.map(member => ({
+    id: member.id,
+    name: member.name,
+    userId: member.user_id || undefined,
+  }));
+};
+
+export const saveExpenseQuick = async (expenseData: Omit<Expense, 'id'>, userId: string): Promise<Expense | null> => {
+  const { data, error } = await supabase
+    .from('expenses')
+    .insert({
+      trip_id: expenseData.tripId,
+      user_id: userId,
+      description: expenseData.description,
+      amount: expenseData.amount,
+      paid_by: expenseData.paidBy,
+      participants: expenseData.participants,
+      category: expenseData.category,
+      split_type: expenseData.splitType || 'equal',
+      shares: expenseData.shares,
+      is_settlement: expenseData.isSettlement || false,
+      date: expenseData.date
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error saving expense:', error);
+    return null;
+  }
+
+  return data ? { 
+    id: data.id,
+    description: data.description,
+    amount: data.amount,
+    paidBy: data.paid_by,
+    participants: data.participants,
+    category: data.category as ExpenseCategory,
+    splitType: data.split_type as 'equal' | 'uneven',
+    shares: data.shares as { [participantId: string]: number } | undefined,
+    isSettlement: data.is_settlement,
+    date: data.date,
+    tripId: data.trip_id
+  } : null;
+};
+
 export const saveExpense = async (expense: Omit<Expense, 'id'>, tripId: string, userId: string): Promise<Expense | null> => {
   try {
     const { data, error } = await supabase

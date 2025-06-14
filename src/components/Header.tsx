@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           💰 All amounts in {settings.currency.name} ({settings.currency.code})
         </p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 relative">
         {user && (
           <HoverCard>
             <HoverCardTrigger asChild>
