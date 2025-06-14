@@ -247,7 +247,8 @@ const TripDetail = () => {
           <MemberList 
             members={members} 
             onAddMember={handleAddMember} 
-            onRemoveMember={handleDeleteMember} 
+            onRemoveMember={handleDeleteMember}
+            tripId={tripId}
           />
         </TabsContent>
 
