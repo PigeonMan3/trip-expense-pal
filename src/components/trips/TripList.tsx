@@ -80,12 +80,16 @@ const TripList: React.FC<TripListProps> = ({ trips, onAddTrip }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">Your Trips</h2>
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          ✈️ Your Adventures
+        </h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>New Trip</Button>
+            <Button className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+              ✨ New Trip
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -123,28 +127,37 @@ const TripList: React.FC<TripListProps> = ({ trips, onAddTrip }) => {
       </div>
 
       {trips.length === 0 ? (
-        <div className="text-center p-8 border rounded-lg bg-muted/50">
-          <p className="text-muted-foreground">No trips yet. Create your first trip to get started.</p>
+        <div className="text-center p-12 border-2 border-dashed border-primary/30 rounded-xl bg-gradient-to-br from-primary/5 to-accent/5 animate-fade-in">
+          <div className="text-6xl mb-4">🧳</div>
+          <p className="text-lg text-muted-foreground mb-2">No adventures yet!</p>
+          <p className="text-sm text-muted-foreground">Create your first trip to start tracking expenses with friends.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {trips.map((trip) => (
-            <Link key={trip.id} to={`/trips/${trip.id}`} className="block">
-              <Card className="h-full hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle>{trip.name}</CardTitle>
-                  {trip.description && <CardDescription>{trip.description}</CardDescription>}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {trips.map((trip, index) => (
+            <Link key={trip.id} to={`/trips/${trip.id}`} className="block group">
+              <Card className="h-full hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-card to-card/80 border-primary/20 hover:border-primary/40 animate-fade-in group-hover:shadow-primary/25" style={{ animationDelay: `${index * 100}ms` }}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:from-accent group-hover:to-primary transition-all duration-300">
+                    {trip.name}
+                  </CardTitle>
+                  {trip.description && (
+                    <CardDescription className="line-clamp-2">{trip.description}</CardDescription>
+                  )}
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Calendar className="mr-2 h-4 w-4" />
+                <CardContent className="pb-3">
+                  <div className="flex items-center text-sm text-muted-foreground bg-secondary/50 rounded-lg p-2">
+                    <Calendar className="mr-2 h-4 w-4 text-primary" />
                     <span>Created {format(new Date(trip.dateCreated), 'MMM d, yyyy')}</span>
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <p className="text-sm text-muted-foreground">
-                    {trip.members.length} {trip.members.length === 1 ? 'member' : 'members'}
-                  </p>
+                  <div className="flex items-center justify-between w-full">
+                    <p className="text-sm text-muted-foreground bg-primary/10 px-3 py-1 rounded-full">
+                      👥 {trip.members.length} {trip.members.length === 1 ? 'member' : 'members'}
+                    </p>
+                    <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">→</div>
+                  </div>
                 </CardFooter>
               </Card>
             </Link>

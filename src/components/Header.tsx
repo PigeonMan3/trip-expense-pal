@@ -18,27 +18,29 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   return (
     <header className="mb-6 flex justify-between items-center">
       <div>
-        <h1 className="text-2xl font-bold">{title}</h1>
-        <p className="text-sm text-muted-foreground">
-          All amounts in {settings.currency.name} ({settings.currency.code})
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in">
+          {title}
+        </h1>
+        <p className="text-sm text-muted-foreground bg-secondary/30 px-3 py-1 rounded-full w-fit mt-2">
+          💰 All amounts in {settings.currency.name} ({settings.currency.code})
         </p>
       </div>
       <div className="flex items-center gap-2">
         {user && (
           <HoverCard>
             <HoverCardTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 transition-all duration-200">
                 <User className="h-4 w-4" />
               </Button>
             </HoverCardTrigger>
-            <HoverCardContent className="w-48">
+            <HoverCardContent className="w-48 bg-gradient-to-br from-card to-secondary/20 border-primary/20">
               <div className="space-y-2">
-                <p className="font-medium">{user.user_metadata?.name || 'User'}</p>
+                <p className="font-medium">👋 {user.user_metadata?.name || 'User'}</p>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="w-full" 
+                  className="w-full bg-gradient-to-r from-destructive/10 to-destructive/20 hover:from-destructive/20 hover:to-destructive/30 border-destructive/30" 
                   onClick={logout}
                 >
                   Logout
@@ -48,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           </HoverCard>
         )}
         <Link to="/settings">
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" className="hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 transition-all duration-200">
             <Settings className="h-4 w-4" />
           </Button>
         </Link>
