@@ -58,10 +58,13 @@ export const useUserSearch = (searchQuery: string) => {
     queryFn: async () => {
       if (!searchQuery || searchQuery.length < 2) return [];
       
+      const { data: user } = await supabase.auth.getUser();
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('user_id, name')
         .or(`name.ilike.%${searchQuery}%`)
+        .neq('user_id', user.user?.id)
         .limit(10);
 
       if (error) throw error;

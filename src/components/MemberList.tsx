@@ -34,10 +34,7 @@ const MemberList = ({ members, onAddMember, onRemoveMember, tripId }: MemberList
     
     if (isPlaceholder) {
       if (!placeholderName.trim()) return;
-      addPlaceholder.mutate({
-        tripId,
-        name: placeholderName.trim(),
-      });
+      onAddMember(placeholderName.trim());
       setPlaceholderName('');
     } else {
       if (selectedUser) {
