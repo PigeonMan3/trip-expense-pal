@@ -56,7 +56,7 @@ export const InviteModal = ({ isOpen, onClose, tripId }: InviteModalProps) => {
         }, {
           onSuccess: () => {
             toast({
-              title: 'Invite sent!',
+              title: 'Invitation sent!',
               description: `Invitation sent to ${selectedUser.name}`,
             });
           },
@@ -76,7 +76,7 @@ export const InviteModal = ({ isOpen, onClose, tripId }: InviteModalProps) => {
         }, {
           onSuccess: () => {
             toast({
-              title: 'Invite sent!',
+              title: 'Invitation sent!',
               description: `Invitation sent to ${searchQuery}`,
             });
           },

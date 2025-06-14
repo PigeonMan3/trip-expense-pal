@@ -46,7 +46,7 @@ const MemberList = ({ members, onAddMember, onRemoveMember, tripId }: MemberList
         }, {
           onSuccess: () => {
             toast({
-              title: 'Invite sent!',
+              title: 'Invitation sent!',
               description: `Invitation sent to ${selectedUser.name}`,
             });
           },
@@ -65,7 +65,7 @@ const MemberList = ({ members, onAddMember, onRemoveMember, tripId }: MemberList
         }, {
           onSuccess: () => {
             toast({
-              title: 'Invite sent!',
+              title: 'Invitation sent!',
               description: `Invitation sent to ${searchQuery}`,
             });
           },

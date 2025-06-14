@@ -91,11 +91,12 @@ export const useSendInvite = () => {
       email?: string; 
       userId?: string;
     }) => {
+      const { data: user } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from('invitations')
         .insert({
           trip_id: tripId,
-          inviter_id: (await supabase.auth.getUser()).data.user?.id,
+          inviter_id: user.user?.id,
           invitee_email: email,
           invitee_user_id: userId,
         })
@@ -107,6 +108,7 @@ export const useSendInvite = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['pendingInvites', variables.tripId] });
+      queryClient.invalidateQueries({ queryKey: ['receivedInvites'] });
     },
   });
 };
