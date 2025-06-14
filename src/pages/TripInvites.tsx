@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Plus, Search } from 'lucide-react';
 import { PendingInvitesList } from '@/components/invites/PendingInvitesList';
 import { InviteModal } from '@/components/invites/InviteModal';
+import { usePendingInvites } from '@/hooks/useInvites';
 
 const TripInvites = () => {
   const { tripId } = useParams<{ tripId: string }>();
@@ -22,9 +23,8 @@ const TripInvites = () => {
     navigate(-1);
   };
 
-  // TODO: Replace with actual data fetching
-  const pendingInvites: any[] = [];
-  const isLoading = false;
+  // Fetch pending invites for this trip
+  const { data: pendingInvites = [], isLoading } = usePendingInvites(tripId);
 
   return (
     <div className="container mx-auto p-4 max-w-4xl animate-fade-in">

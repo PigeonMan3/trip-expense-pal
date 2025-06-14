@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,22 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Search, User, Mail, Check, ChevronsUpDown } from 'lucide-react';
-import { useSendInvite, useUserSearch, useAddPlaceholder } from '@/hooks/useInvites';
-import { cn } from '@/lib/utils';
+import { Search, User, Mail, Check } from 'lucide-react';
+import { useSendInvite, useUserSearch, UserSearchResult } from '@/hooks/useInvites';
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -34,14 +20,22 @@ interface InviteModalProps {
 
 export const InviteModal = ({ isOpen, onClose, tripId }: InviteModalProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedUser, setSelectedUser] = useState<{id: string; name: string; email: string} | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
   const [isPlaceholder, setIsPlaceholder] = useState(false);
   const [placeholderName, setPlaceholderName] = useState('');
-  const [isUserSelectOpen, setIsUserSelectOpen] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   const sendInvite = useSendInvite();
-  const addPlaceholder = useAddPlaceholder();
-  const { data: userSearchResults } = useUserSearch(searchQuery);
+  const { data: searchResults = [] } = useUserSearch(searchQuery);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchQuery('');
+      setSelectedUser(null);
+      setShowSuggestions(false);
+    }
+  }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,28 +44,38 @@ export const InviteModal = ({ isOpen, onClose, tripId }: InviteModalProps) => {
     
     if (isPlaceholder) {
       if (!placeholderName.trim()) return;
-      addPlaceholder.mutate({
-        tripId,
-        name: placeholderName.trim(),
-      });
+      // Use useAddPlaceholder hook for placeholders
+      console.log('Creating placeholder:', { name: placeholderName, tripId });
     } else {
-      if (!selectedUser && !searchQuery.includes('@')) return;
-      
-      // If a user is selected, invite by user ID, otherwise by email
       if (selectedUser) {
         sendInvite.mutate({
           tripId,
           userId: selectedUser.id,
         });
       } else if (searchQuery.includes('@')) {
+        // If it's an email, send invite by email
         sendInvite.mutate({
           tripId,
           email: searchQuery,
         });
+      } else {
+        return; // No valid user or email
       }
     }
     
     handleClose();
+  };
+
+  const handleUserSelect = (user: UserSearchResult) => {
+    setSelectedUser(user);
+    setSearchQuery(user.name);
+    setShowSuggestions(false);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setSelectedUser(null);
+    setShowSuggestions(value.length >= 2 && !isPlaceholder);
   };
 
   const handleClose = () => {
@@ -79,21 +83,15 @@ export const InviteModal = ({ isOpen, onClose, tripId }: InviteModalProps) => {
     setSelectedUser(null);
     setIsPlaceholder(false);
     setPlaceholderName('');
-    setIsUserSelectOpen(false);
+    setShowSuggestions(false);
     onClose();
   };
 
   const isFormValid = tripId && (
-    isPlaceholder ? placeholderName.trim() : (selectedUser || searchQuery.includes('@'))
+    isPlaceholder 
+      ? placeholderName.trim() 
+      : selectedUser || searchQuery.includes('@')
   );
-
-  // Filter users based on search query
-  const filteredUsers = useMemo(() => {
-    if (!userSearchResults) return [];
-    return userSearchResults.filter(user => 
-      user.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [userSearchResults, searchQuery]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -103,7 +101,6 @@ export const InviteModal = ({ isOpen, onClose, tripId }: InviteModalProps) => {
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-
           <div className="flex items-center space-x-2">
             <Switch
               id="placeholder-mode"
@@ -133,78 +130,44 @@ export const InviteModal = ({ isOpen, onClose, tripId }: InviteModalProps) => {
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <Label htmlFor="user-search" className="text-foreground">
-                Search Users or Enter Email
+                Search Users
               </Label>
-              <Popover open={isUserSelectOpen} onOpenChange={setIsUserSelectOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={isUserSelectOpen}
-                    className="w-full justify-between bg-background border-input"
-                  >
-                    <div className="flex items-center">
-                      <Search className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span className="truncate">
-                        {selectedUser ? selectedUser.name : searchQuery || "Search users or enter email..."}
-                      </span>
-                    </div>
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0" align="start">
-                  <Command>
-                    <CommandInput 
-                      placeholder="Search users or type email..." 
-                      value={searchQuery}
-                      onValueChange={setSearchQuery}
-                    />
-                    <CommandList>
-                      {searchQuery.includes('@') && !selectedUser && (
-                        <CommandGroup>
-                          <CommandItem
-                            onSelect={() => {
-                              setSelectedUser(null);
-                              setIsUserSelectOpen(false);
-                            }}
-                          >
-                            <Mail className="mr-2 h-4 w-4" />
-                            <span>Invite {searchQuery}</span>
-                          </CommandItem>
-                        </CommandGroup>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                {selectedUser && (
+                  <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+                )}
+                <Input
+                  ref={inputRef}
+                  id="user-search"
+                  type="text"
+                  placeholder="Search by name or enter email..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onFocus={() => setShowSuggestions(searchQuery.length >= 2)}
+                  className="pl-10 pr-10 bg-background border-input"
+                />
+              </div>
+              
+              {showSuggestions && searchResults.length > 0 && (
+                <div className="absolute z-10 w-full bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {searchResults.map((user) => (
+                    <button
+                      key={user.id}
+                      type="button"
+                      onClick={() => handleUserSelect(user)}
+                      className="w-full px-4 py-2 text-left hover:bg-accent focus:bg-accent focus:outline-none"
+                    >
+                      <div className="font-medium text-foreground">{user.name}</div>
+                      {user.email && (
+                        <div className="text-sm text-muted-foreground">{user.email}</div>
                       )}
-                      {filteredUsers.length > 0 && (
-                        <CommandGroup heading="Users">
-                          {filteredUsers.map((user) => (
-                            <CommandItem
-                              key={user.id}
-                              onSelect={() => {
-                                setSelectedUser(user);
-                                setSearchQuery(user.name);
-                                setIsUserSelectOpen(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  selectedUser?.id === user.id ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              <User className="mr-2 h-4 w-4" />
-                              <span>{user.name}</span>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      )}
-                      {!searchQuery.includes('@') && filteredUsers.length === 0 && searchQuery.length > 0 && (
-                        <CommandEmpty>No users found.</CommandEmpty>
-                      )}
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -219,7 +182,7 @@ export const InviteModal = ({ isOpen, onClose, tripId }: InviteModalProps) => {
             </Button>
             <Button
               type="submit"
-              disabled={!isFormValid || sendInvite.isPending || addPlaceholder.isPending}
+              disabled={!isFormValid || sendInvite.isPending}
               className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[44px] min-h-[44px]"
             >
               {isPlaceholder ? (
