@@ -23,12 +23,11 @@ import { useSendInvite } from '@/hooks/useInvites';
 interface InviteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  trips: TripInvite[];
+  tripId?: string;
 }
 
-export const InviteModal = ({ isOpen, onClose, trips }: InviteModalProps) => {
+export const InviteModal = ({ isOpen, onClose, tripId }: InviteModalProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTripId, setSelectedTripId] = useState<string>('');
   const [isPlaceholder, setIsPlaceholder] = useState(false);
   const [placeholderName, setPlaceholderName] = useState('');
   
@@ -37,16 +36,16 @@ export const InviteModal = ({ isOpen, onClose, trips }: InviteModalProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedTripId) return;
+    if (!tripId) return;
     
     if (isPlaceholder) {
       if (!placeholderName.trim()) return;
       // TODO: Add placeholder logic
-      console.log('Creating placeholder:', { name: placeholderName, tripId: selectedTripId });
+      console.log('Creating placeholder:', { name: placeholderName, tripId });
     } else {
       if (!searchQuery.trim()) return;
       sendInvite.mutate({
-        tripId: selectedTripId,
+        tripId,
         email: searchQuery,
       });
     }
@@ -56,13 +55,12 @@ export const InviteModal = ({ isOpen, onClose, trips }: InviteModalProps) => {
 
   const handleClose = () => {
     setSearchQuery('');
-    setSelectedTripId('');
     setIsPlaceholder(false);
     setPlaceholderName('');
     onClose();
   };
 
-  const isFormValid = selectedTripId && (
+  const isFormValid = tripId && (
     isPlaceholder ? placeholderName.trim() : searchQuery.trim()
   );
 
@@ -74,21 +72,6 @@ export const InviteModal = ({ isOpen, onClose, trips }: InviteModalProps) => {
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="trip-select" className="text-foreground">Select Trip</Label>
-            <Select value={selectedTripId} onValueChange={setSelectedTripId}>
-              <SelectTrigger className="bg-background border-input">
-                <SelectValue placeholder="Choose a trip..." />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border-border">
-                {trips.map((trip) => (
-                  <SelectItem key={trip.id} value={trip.id}>
-                    {trip.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
           <div className="flex items-center space-x-2">
             <Switch

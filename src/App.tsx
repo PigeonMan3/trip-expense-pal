@@ -36,7 +36,7 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/trips" element={<ProtectedRoute><Trips /></ProtectedRoute>} />
                 <Route path="/trips/:tripId" element={<ProtectedRoute><TripDetail /></ProtectedRoute>} />
-                <Route path="/invites" element={<ProtectedRoute><TripInvites /></ProtectedRoute>} />
+                <Route path="/trips/:tripId/invites" element={<ProtectedRoute><TripInvites /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/original" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
