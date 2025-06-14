@@ -28,18 +28,9 @@ import ExpenseList from '@/components/ExpenseList';
 import ActivityTimeline from '@/components/timeline/ActivityTimeline';
 import EditExpenseDialog from '@/components/EditExpenseDialog';
 import Summary from '@/components/Summary';
-import { 
-  Dialog, 
-  DialogTrigger, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription,
-  DialogFooter
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { v4 as uuidv4 } from 'uuid';
+
 import { useToast } from '@/hooks/use-toast';
+import { InviteModal } from '@/components/invites/InviteModal';
 
 const TripDetail = () => {
   const { tripId } = useParams<{ tripId: string }>();
@@ -52,7 +43,6 @@ const TripDetail = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
-  const [newMemberName, setNewMemberName] = useState('');
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [budget, setBudget] = useState<Budget | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -101,19 +91,6 @@ const TripDetail = () => {
     const newMember = await addMember(tripId, name, user?.id);
     if (newMember) {
       setMembers([...members, newMember]);
-    }
-    
-    setNewMemberName('');
-    setIsAddMemberDialogOpen(false);
-  };
-
-  const handleAddMemberFromDialog = () => {
-    if (newMemberName.trim()) {
-      handleAddMember(newMemberName.trim());
-      toast({
-        title: 'Member added',
-        description: `${newMemberName} has been added to the trip.`,
-      });
     }
   };
 
@@ -270,36 +247,13 @@ const TripDetail = () => {
           <div className="grid grid-cols-1">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Trip Members</h2>
-              <Dialog open={isAddMemberDialogOpen} onOpenChange={setIsAddMemberDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2">
-                    <UserPlus className="h-4 w-4" />
-                    <span>Add Member</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add Trip Member</DialogTitle>
-                    <DialogDescription>
-                      Add a new member to share expenses with.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-4">
-                    <label htmlFor="memberName" className="text-sm font-medium">Member Name</label>
-                    <Input
-                      id="memberName"
-                      value={newMemberName}
-                      onChange={(e) => setNewMemberName(e.target.value)}
-                      placeholder="Name"
-                      className="mt-1"
-                    />
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddMemberDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleAddMemberFromDialog}>Add Member</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <Button 
+                onClick={() => setIsAddMemberDialogOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span>Invite</span>
+              </Button>
             </div>
             <MemberList 
               members={members} 
@@ -364,6 +318,13 @@ const TripDetail = () => {
         isOpen={!!editingExpense}
         onClose={() => setEditingExpense(null)}
         onUpdateExpense={handleUpdateExpense}
+      />
+
+      {/* Invite Modal */}
+      <InviteModal
+        isOpen={isAddMemberDialogOpen}
+        onClose={() => setIsAddMemberDialogOpen(false)}
+        tripId={tripId}
       />
     </div>
   );
