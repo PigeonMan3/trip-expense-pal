@@ -20,7 +20,7 @@ const TripInvites = () => {
   }
 
   const handleBack = () => {
-    navigate(-1);
+    navigate(`/trips/${tripId}`);
   };
 
   // Fetch pending invites for this trip
