@@ -212,14 +212,14 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
           <div className="hidden md:block">
             <div className="relative">
               {/* Timeline Line */}
-              <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/30 via-primary to-accent/30 transform -translate-y-1/2"></div>
+              <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/30 via-primary to-accent/30 transform -translate-y-1/2 z-0"></div>
               
               {/* Activity Groups */}
-              <div className="flex justify-between items-center space-x-8 py-8">
+              <div className="flex justify-between items-center space-x-8 py-8 relative z-10">
                 {activityGroups.map((group, index) => (
                   <div key={index} className="flex flex-col items-center min-w-max">
                     {/* Activity Header */}
-                    <Card className="mb-4 bg-gradient-to-br from-card to-secondary/20 border-primary/20 hover:shadow-lg transition-shadow duration-200">
+                    <Card className="mb-4 bg-gradient-to-br from-card to-secondary/20 border-primary/20 hover:shadow-lg transition-shadow duration-200 relative z-20 bg-card">
                       <CardHeader className="p-3 text-center">
                         <div className="text-2xl mb-1">
                           {categoryEmojis[group.category] || '💸'}
@@ -238,7 +238,7 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                     </Card>
                     
                     {/* Expenses */}
-                    <div className="flex space-x-3">
+                    <div className="flex space-x-3 relative z-30">
                       {group.expenses.map((expense) => (
                         <ExpenseCard key={expense.id} expense={expense} />
                       ))}
