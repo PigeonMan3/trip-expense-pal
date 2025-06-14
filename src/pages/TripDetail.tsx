@@ -14,11 +14,12 @@ import { calculateBalances, calculateDebts } from '@/utils/expenseCalculator';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, UserPlus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Home, Receipt } from "lucide-react";
+import { Users, Home, Receipt, Clock } from "lucide-react";
 import Header from '@/components/Header';
 import MemberList from '@/components/MemberList';
 import ExpenseForm from '@/components/ExpenseForm';
 import ExpenseList from '@/components/ExpenseList';
+import ActivityTimeline from '@/components/timeline/ActivityTimeline';
 import Summary from '@/components/Summary';
 import { 
   Dialog, 
@@ -189,6 +190,10 @@ const TripDetail = () => {
             <Home className="h-4 w-4" />
             <span>Dashboard</span>
           </TabsTrigger>
+          <TabsTrigger value="timeline" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            <span>Timeline</span>
+          </TabsTrigger>
           <TabsTrigger value="members" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span>Members</span>
@@ -212,6 +217,18 @@ const TripDetail = () => {
               onAddExpense={handleAddExpense} 
             />
           </div>
+        </TabsContent>
+
+        {/* Timeline Tab */}
+        <TabsContent value="timeline" className="mt-4">
+          <ActivityTimeline 
+            expenses={expenses} 
+            members={members}
+            onEditExpense={(expense) => {
+              // Handle expense editing here
+              console.log('Edit expense:', expense);
+            }}
+          />
         </TabsContent>
 
         {/* Members Tab */}
