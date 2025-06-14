@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { 
   loadTrips, 
   saveExpense,
+  updateExpense,
   deleteExpense as deleteExpenseFromDB,
   addMember,
   removeMember
@@ -20,6 +21,7 @@ import MemberList from '@/components/MemberList';
 import ExpenseForm from '@/components/ExpenseForm';
 import ExpenseList from '@/components/ExpenseList';
 import ActivityTimeline from '@/components/timeline/ActivityTimeline';
+import EditExpenseDialog from '@/components/EditExpenseDialog';
 import Summary from '@/components/Summary';
 import { 
   Dialog, 
@@ -46,6 +48,7 @@ const TripDetail = () => {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
   const [newMemberName, setNewMemberName] = useState('');
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -161,6 +164,25 @@ const TripDetail = () => {
     }
   };
 
+  const handleEditExpense = (expense: Expense) => {
+    setEditingExpense(expense);
+  };
+
+  const handleUpdateExpense = async (updatedExpense: Expense) => {
+    if (!trip || !user) return;
+    
+    const success = await updateExpense(updatedExpense);
+    if (success) {
+      setExpenses(expenses.map(exp => 
+        exp.id === updatedExpense.id ? updatedExpense : exp
+      ));
+      toast({
+        title: 'Expense updated',
+        description: `${updatedExpense.description} has been updated.`,
+      });
+    }
+  };
+
   const balances: Balance[] = calculateBalances(expenses, members);
   const debts: Debt[] = calculateDebts(balances, members);
 
@@ -224,10 +246,7 @@ const TripDetail = () => {
           <ActivityTimeline 
             expenses={expenses} 
             members={members}
-            onEditExpense={(expense) => {
-              // Handle expense editing here
-              console.log('Edit expense:', expense);
-            }}
+            onEditExpense={handleEditExpense}
           />
         </TabsContent>
 
@@ -281,11 +300,21 @@ const TripDetail = () => {
             <ExpenseList 
               expenses={expenses} 
               members={members} 
-              onDeleteExpense={handleDeleteExpense} 
+              onDeleteExpense={handleDeleteExpense}
+              onEditExpense={handleEditExpense}
             />
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Expense Dialog */}
+      <EditExpenseDialog
+        expense={editingExpense}
+        members={members}
+        isOpen={!!editingExpense}
+        onClose={() => setEditingExpense(null)}
+        onUpdateExpense={handleUpdateExpense}
+      />
     </div>
   );
 };

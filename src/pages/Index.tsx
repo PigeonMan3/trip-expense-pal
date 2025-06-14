@@ -124,7 +124,8 @@ const Index = () => {
             <ExpenseList 
               expenses={expenses} 
               members={members} 
-              onDeleteExpense={handleDeleteExpense} 
+              onDeleteExpense={handleDeleteExpense}
+              onEditExpense={() => {}} // Not implemented on main page
             />
           </div>
         </TabsContent>

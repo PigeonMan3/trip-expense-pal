@@ -10,6 +10,7 @@ interface ExpenseListProps {
   expenses: Expense[];
   members: Member[];
   onDeleteExpense: (id: string) => void;
+  onEditExpense: (expense: Expense) => void;
 }
 
 // Helper function to get member name by ID
@@ -29,7 +30,7 @@ const getCategoryEmoji = (category: string): string => {
   }
 };
 
-const ExpenseList = ({ expenses, members, onDeleteExpense }: ExpenseListProps) => {
+const ExpenseList = ({ expenses, members, onDeleteExpense, onEditExpense }: ExpenseListProps) => {
   const { settings } = useSettings();
 
   if (expenses.length === 0) {
@@ -71,18 +72,28 @@ const ExpenseList = ({ expenses, members, onDeleteExpense }: ExpenseListProps) =
                 </div>
               </div>
               
-              <div className="flex flex-col items-end">
+              <div className="flex flex-col items-end gap-1">
                 <span className="font-bold text-md">
                   {formatAmount(expense.amount, settings.currency)}
                 </span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => onDeleteExpense(expense.id)}
-                  className="h-6 text-xs text-destructive hover:text-destructive mt-1"
-                >
-                  Delete
-                </Button>
+                <div className="flex gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => onEditExpense(expense)}
+                    className="h-6 text-xs hover:bg-primary/10"
+                  >
+                    Edit
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => onDeleteExpense(expense.id)}
+                    className="h-6 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    Delete
+                  </Button>
+                </div>
               </div>
             </div>
           </Card>

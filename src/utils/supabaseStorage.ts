@@ -134,6 +134,30 @@ export const saveExpense = async (expense: Omit<Expense, 'id'>, tripId: string, 
   }
 };
 
+export const updateExpense = async (expense: Expense): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('expenses')
+      .update({
+        description: expense.description,
+        amount: expense.amount,
+        paid_by: expense.paidBy,
+        participants: expense.participants,
+        category: expense.category,
+        split_type: expense.splitType,
+        shares: expense.shares,
+        is_settlement: expense.isSettlement || false,
+        date: expense.date
+      })
+      .eq('id', expense.id);
+
+    return !error;
+  } catch (error) {
+    console.error('Error updating expense:', error);
+    return false;
+  }
+};
+
 export const deleteExpense = async (expenseId: string): Promise<boolean> => {
   try {
     const { error } = await supabase

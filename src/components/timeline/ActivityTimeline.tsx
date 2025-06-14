@@ -9,13 +9,6 @@ import {
   HoverCardContent, 
   HoverCardTrigger 
 } from '@/components/ui/hover-card';
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
 import { Clock, Edit, Users, Euro } from 'lucide-react';
 import { useSettings } from '@/contexts/SettingsContext';
 
@@ -144,26 +137,17 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
             </div>
           </div>
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button 
-                size="sm" 
-                className="w-full bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20"
-                onClick={() => setSelectedExpense(expense)}
-              >
-                <Edit className="h-3 w-3 mr-1" />
-                Edit Expense
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit Expense</DialogTitle>
-              </DialogHeader>
-              <div className="p-4 text-center text-muted-foreground">
-                Edit functionality would go here
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button 
+            size="sm" 
+            className="w-full bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20"
+            onClick={() => {
+              setSelectedExpense(expense);
+              onEditExpense?.(expense);
+            }}
+          >
+            <Edit className="h-3 w-3 mr-1" />
+            Edit Expense
+          </Button>
         </div>
       </HoverCardContent>
     </HoverCard>
