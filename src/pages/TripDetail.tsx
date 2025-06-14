@@ -30,7 +30,7 @@ import EditExpenseDialog from '@/components/EditExpenseDialog';
 import Summary from '@/components/Summary';
 
 import { useToast } from '@/hooks/use-toast';
-import { InviteModal } from '@/components/invites/InviteModal';
+
 
 const TripDetail = () => {
   const { tripId } = useParams<{ tripId: string }>();
@@ -42,7 +42,7 @@ const TripDetail = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [activeTab, setActiveTab] = useState<string>("dashboard");
-  const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
+  
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [budget, setBudget] = useState<Budget | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -244,23 +244,11 @@ const TripDetail = () => {
 
         {/* Members Tab */}
         <TabsContent value="members" className="mt-4">
-          <div className="grid grid-cols-1">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Trip Members</h2>
-              <Button 
-                onClick={() => setIsAddMemberDialogOpen(true)}
-                className="flex items-center gap-2"
-              >
-                <UserPlus className="h-4 w-4" />
-                <span>Invite</span>
-              </Button>
-            </div>
-            <MemberList 
-              members={members} 
-              onAddMember={handleAddMember} 
-              onRemoveMember={handleDeleteMember} 
-            />
-          </div>
+          <MemberList 
+            members={members} 
+            onAddMember={handleAddMember} 
+            onRemoveMember={handleDeleteMember} 
+          />
         </TabsContent>
 
         {/* Expenses Tab */}
@@ -318,13 +306,6 @@ const TripDetail = () => {
         isOpen={!!editingExpense}
         onClose={() => setEditingExpense(null)}
         onUpdateExpense={handleUpdateExpense}
-      />
-
-      {/* Invite Modal */}
-      <InviteModal
-        isOpen={isAddMemberDialogOpen}
-        onClose={() => setIsAddMemberDialogOpen(false)}
-        tripId={tripId}
       />
     </div>
   );
