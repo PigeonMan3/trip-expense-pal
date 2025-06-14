@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import TripList from '@/components/trips/TripList';
 import Header from '@/components/Header';
 import { Trip } from '@/types';
-import { loadTrips, saveTrip } from '@/utils/supabaseStorage';
+import { loadTrips, saveTrip, toggleTripPinned } from '@/utils/supabaseStorage';
 import { Button } from '@/components/ui/button';
 
 const Trips = () => {
@@ -34,6 +34,15 @@ const Trips = () => {
     }
   };
 
+  const handleTogglePin = async (tripId: string, pinned: boolean) => {
+    const success = await toggleTripPinned(tripId, pinned);
+    if (success) {
+      setTrips(prev => prev.map(trip => 
+        trip.id === tripId ? { ...trip, pinned } : trip
+      ));
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/auth');
@@ -44,7 +53,7 @@ const Trips = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl animate-fade-in">
+    <div className="container mx-auto p-4 max-w-6xl animate-fade-in">
       <div className="flex justify-between items-center mb-8">
         <Header title="🌟 Your Trip Expenses" />
         <Button 
@@ -56,7 +65,7 @@ const Trips = () => {
         </Button>
       </div>
       
-      <TripList trips={trips} onAddTrip={handleAddTrip} />
+      <TripList trips={trips} onAddTrip={handleAddTrip} onTogglePin={handleTogglePin} />
     </div>
   );
 };

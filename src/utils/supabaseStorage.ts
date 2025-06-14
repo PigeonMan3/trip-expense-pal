@@ -28,6 +28,7 @@ export const loadTrips = async (userId: string): Promise<Trip[]> => {
       ownerId: trip.user_id,
       members: trip.members?.map((m: any) => m.id) || [],
       dateCreated: trip.created_at,
+      pinned: trip.pinned || false,
       membersData: trip.members?.map((m: any) => ({
         id: m.id,
         name: m.name,
@@ -84,7 +85,8 @@ export const saveTrip = async (trip: Omit<Trip, 'id' | 'dateCreated'>, userId: s
       description: data.description || '',
       ownerId: data.user_id,
       members: trip.members,
-      dateCreated: data.created_at
+      dateCreated: data.created_at,
+      pinned: data.pinned || false
     };
   } catch (error) {
     console.error('Error saving trip:', error);
@@ -284,6 +286,21 @@ export const updateBudget = async (budget: Budget): Promise<boolean> => {
     return !error;
   } catch (error) {
     console.error('Error updating budget:', error);
+    return false;
+  }
+};
+
+// Pin operations
+export const toggleTripPinned = async (tripId: string, pinned: boolean): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('trips')
+      .update({ pinned })
+      .eq('id', tripId);
+
+    return !error;
+  } catch (error) {
+    console.error('Error toggling trip pin status:', error);
     return false;
   }
 };

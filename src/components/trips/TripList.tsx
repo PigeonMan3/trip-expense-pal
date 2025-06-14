@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, AlertTriangle } from 'lucide-react';
+import { Calendar, AlertTriangle, Pin } from 'lucide-react';
 import { Trip, Member, Expense } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -35,9 +35,10 @@ interface TripListProps {
     expensesData?: Expense[]; 
   })[];
   onAddTrip: (trip: Trip) => void;
+  onTogglePin: (tripId: string, pinned: boolean) => void;
 }
 
-const TripList: React.FC<TripListProps> = ({ trips, onAddTrip }) => {
+const TripList: React.FC<TripListProps> = ({ trips, onAddTrip, onTogglePin }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -90,6 +91,19 @@ const TripList: React.FC<TripListProps> = ({ trips, onAddTrip }) => {
       title: 'Trip created',
       description: `"${newTripName}" has been created successfully.`,
     });
+  };
+
+  // Sort trips: pinned first, then by creation date
+  const sortedTrips = [...trips].sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime();
+  });
+
+  const handleTogglePin = (e: React.MouseEvent, tripId: string, currentPinned: boolean) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onTogglePin(tripId, !currentPinned);
   };
 
   return (
@@ -147,13 +161,26 @@ const TripList: React.FC<TripListProps> = ({ trips, onAddTrip }) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trips.map((trip, index) => (
+          {sortedTrips.map((trip, index) => (
             <Link key={trip.id} to={`/trips/${trip.id}`} className="block group">
               <Card className="h-full hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-card to-card/80 border-primary/20 hover:border-primary/40 animate-fade-in group-hover:shadow-primary/25" style={{ animationDelay: `${index * 100}ms` }}>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-foreground group-hover:text-primary transition-colors duration-300">
-                    {trip.name}
-                  </CardTitle>
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-foreground group-hover:text-primary transition-colors duration-300 flex-1">
+                      {trip.name}
+                    </CardTitle>
+                    <button
+                      onClick={(e) => handleTogglePin(e, trip.id, trip.pinned || false)}
+                      className={`ml-2 p-1 rounded-full transition-colors ${
+                        trip.pinned 
+                          ? 'text-primary bg-primary/10 hover:bg-primary/20' 
+                          : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
+                      }`}
+                      title={trip.pinned ? 'Unpin trip' : 'Pin trip'}
+                    >
+                      <Pin className={`h-4 w-4 ${trip.pinned ? 'fill-current' : ''}`} />
+                    </button>
+                  </div>
                   {trip.description && (
                     <CardDescription className="line-clamp-2">{trip.description}</CardDescription>
                   )}

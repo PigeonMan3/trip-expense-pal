@@ -67,6 +67,7 @@ export interface Trip {
   ownerId: string; // User who created the trip
   members: string[]; // Member IDs
   isArchived?: boolean;
+  pinned?: boolean;
 }
 
 export interface Budget {
