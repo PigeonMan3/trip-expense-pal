@@ -25,11 +25,16 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           💰 All amounts in {settings.currency.name} ({settings.currency.code})
         </p>
       </div>
-      <div className="flex items-center gap-2 relative">
+      <div className="flex items-center gap-2">
+        <Link to="/settings">
+          <Button variant="outline" size="icon" className="hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 transition-all duration-200">
+            <Settings className="h-4 w-4" />
+          </Button>
+        </Link>
         {user && (
           <HoverCard>
             <HoverCardTrigger asChild>
-              <Button variant="ghost" size="icon" className="hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 transition-all duration-200">
+              <Button variant="outline" size="icon" className="hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 transition-all duration-200">
                 <User className="h-4 w-4" />
               </Button>
             </HoverCardTrigger>
@@ -49,11 +54,6 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
             </HoverCardContent>
           </HoverCard>
         )}
-        <Link to="/settings">
-          <Button variant="outline" size="icon" className="hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 transition-all duration-200">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </Link>
       </div>
     </header>
   );

@@ -54,16 +54,7 @@ const Trips = () => {
 
   return (
     <div className="container mx-auto p-4 max-w-6xl animate-fade-in">
-      <div className="flex justify-between items-center mb-8">
-        <Header title="🌟 Your Trip Expenses" />
-        <Button 
-          variant="outline" 
-          onClick={handleLogout}
-          className="bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 border-primary/30"
-        >
-          Logout
-        </Button>
-      </div>
+      <Header title="🌟 Your Trip Expenses" />
       
       <TripList trips={trips} onAddTrip={handleAddTrip} onTogglePin={handleTogglePin} />
     </div>

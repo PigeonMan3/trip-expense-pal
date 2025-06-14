@@ -36,11 +36,9 @@ export const QuickAddExpense = () => {
   const trigger = (
     <Button
       aria-label="Quick add expense"
-      className="fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-transform hover:scale-105 active:scale-95
-                 md:relative md:h-10 md:w-auto md:rounded-md md:px-4 md:shadow-none md:bg-transparent md:text-foreground md:hover:bg-accent"
+      className="fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-transform hover:scale-105 active:scale-95 md:hidden"
     >
-      <Plus className="h-6 w-6 md:mr-2" />
-      <span className="hidden md:inline">Expense</span>
+      <Plus className="h-6 w-6" />
     </Button>
   );
 

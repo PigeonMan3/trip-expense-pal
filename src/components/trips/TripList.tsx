@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, AlertTriangle, Pin } from 'lucide-react';
+import { Calendar, AlertTriangle, Pin, Plus } from 'lucide-react';
 import { Trip, Member, Expense } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -112,45 +112,54 @@ const TripList: React.FC<TripListProps> = ({ trips, onAddTrip, onTogglePin }) =>
         <h2 className="text-2xl font-bold text-foreground">
           ✈️ Your Adventures
         </h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
-              ✨ New Trip
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create a New Trip</DialogTitle>
-              <DialogDescription>
-                Add a new trip to track expenses with friends.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <label htmlFor="tripName" className="text-sm font-medium">Trip Name</label>
-                <Input
-                  id="tripName"
-                  placeholder="Summer Vacation"
-                  value={newTripName}
-                  onChange={(e) => setNewTripName(e.target.value)}
-                />
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            className="hidden md:flex items-center gap-2 bg-gradient-to-r from-secondary/50 to-secondary/80 hover:from-secondary/70 hover:to-secondary/90 border-secondary"
+          >
+            <Plus className="h-4 w-4" />
+            Quick Expense
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+                ✨ New Trip
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create a New Trip</DialogTitle>
+                <DialogDescription>
+                  Add a new trip to track expenses with friends.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label htmlFor="tripName" className="text-sm font-medium">Trip Name</label>
+                  <Input
+                    id="tripName"
+                    placeholder="Summer Vacation"
+                    value={newTripName}
+                    onChange={(e) => setNewTripName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="tripDescription" className="text-sm font-medium">Description (Optional)</label>
+                  <Textarea
+                    id="tripDescription"
+                    placeholder="Trip details..."
+                    value={newTripDescription}
+                    onChange={(e) => setNewTripDescription(e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <label htmlFor="tripDescription" className="text-sm font-medium">Description (Optional)</label>
-                <Textarea
-                  id="tripDescription"
-                  placeholder="Trip details..."
-                  value={newTripDescription}
-                  onChange={(e) => setNewTripDescription(e.target.value)}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleAddTrip}>Create Trip</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddTrip}>Create Trip</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {trips.length === 0 ? (
