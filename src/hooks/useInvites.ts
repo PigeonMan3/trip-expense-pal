@@ -145,12 +145,15 @@ export const useReceivedInvites = () => {
           status,
           created_at,
           trip:trips(id, name),
-          inviter:profiles!invitations_inviter_id_fkey(name)
+          inviter:profiles!inviter_id(name)
         `)
         .or(`invitee_email.eq.${user.user.email},invitee_user_id.eq.${user.user.id}`)
         .eq('status', 'pending');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching received invites:', error);
+        throw error;
+      }
 
       return data.map((invite: any) => ({
         id: invite.id,

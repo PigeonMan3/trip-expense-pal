@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,11 +12,12 @@ const Auth = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
-    navigate('/trips');
-    return null;
-  }
+  // Redirect if already authenticated - using useEffect to avoid state update during render
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/trips');
+    }
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className="container mx-auto flex items-center justify-center min-h-screen p-4">
