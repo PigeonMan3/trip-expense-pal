@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Settings, User } from 'lucide-react';
+import { Settings, User, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
+import { ReceivedInvitesModal } from '@/components/invites/ReceivedInvitesModal';
+import { useReceivedInvites } from '@/hooks/useInvites';
 
 interface HeaderProps {
   title: string;
@@ -15,6 +17,8 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   const { settings } = useSettings();
   const { user, logout } = useAuth();
   const { tripId } = useParams();
+  const [invitesModalOpen, setInvitesModalOpen] = useState(false);
+  const { data: receivedInvites } = useReceivedInvites();
 
   return (
     <header className="mb-6 flex justify-between items-center">
@@ -27,6 +31,19 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         </p>
       </div>
       <div className="flex items-center gap-2">
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 transition-all duration-200 relative"
+          onClick={() => setInvitesModalOpen(true)}
+        >
+          <Mail className="h-4 w-4" />
+          {receivedInvites && receivedInvites.length > 0 && (
+            <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full text-xs flex items-center justify-center text-white">
+              {receivedInvites.length}
+            </span>
+          )}
+        </Button>
         <Link to="/settings">
           <Button variant="outline" size="icon" className="hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 transition-all duration-200">
             <Settings className="h-4 w-4" />
@@ -56,6 +73,11 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           </HoverCard>
         )}
       </div>
+      
+      <ReceivedInvitesModal 
+        open={invitesModalOpen} 
+        onOpenChange={setInvitesModalOpen} 
+      />
     </header>
   );
 };

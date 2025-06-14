@@ -128,6 +128,79 @@ export const useCancelInvite = () => {
   });
 };
 
+// Fetch received invitations for current user
+export const useReceivedInvites = () => {
+  return useQuery({
+    queryKey: ['receivedInvites'],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return [];
+      
+      const { data, error } = await supabase
+        .from('invitations')
+        .select(`
+          id,
+          status,
+          created_at,
+          trip:trips(id, name),
+          inviter:profiles!invitations_inviter_id_fkey(name)
+        `)
+        .or(`invitee_email.eq.${user.user.email},invitee_user_id.eq.${user.user.id}`)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+
+      return data.map((invite: any) => ({
+        id: invite.id,
+        tripId: invite.trip?.id,
+        tripName: invite.trip?.name || 'Unknown Trip',
+        inviterName: invite.inviter?.name || 'Unknown User',
+        status: invite.status,
+        createdAt: invite.created_at,
+      }));
+    },
+  });
+};
+
+// Accept invitation
+export const useAcceptInvite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (inviteId: string) => {
+      const { error } = await supabase
+        .from('invitations')
+        .update({ status: 'accepted' })
+        .eq('id', inviteId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['receivedInvites'] });
+      queryClient.invalidateQueries({ queryKey: ['trips'] });
+    },
+  });
+};
+
+// Decline invitation
+export const useDeclineInvite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (inviteId: string) => {
+      const { error } = await supabase
+        .from('invitations')
+        .update({ status: 'declined' })
+        .eq('id', inviteId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['receivedInvites'] });
+    },
+  });
+};
+
 // Add placeholder
 export const useAddPlaceholder = () => {
   const queryClient = useQueryClient();
