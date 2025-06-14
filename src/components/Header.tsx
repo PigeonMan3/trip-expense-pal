@@ -26,6 +26,11 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         </p>
       </div>
       <div className="flex items-center gap-2">
+        <Link to="/invites">
+          <Button variant="outline" className="hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 transition-all duration-200">
+            Manage Invites
+          </Button>
+        </Link>
         <Link to="/settings">
           <Button variant="outline" size="icon" className="hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 transition-all duration-200">
             <Settings className="h-4 w-4" />
