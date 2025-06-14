@@ -22,14 +22,18 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from 'lucide-react';
-import { Trip } from '@/types';
+import { Calendar, AlertTriangle } from 'lucide-react';
+import { Trip, Member, Expense } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
+import { calculateDebts, calculateBalances } from '@/utils/expenseCalculator';
 
 interface TripListProps {
-  trips: Trip[];
+  trips: (Trip & { 
+    membersData?: Member[]; 
+    expensesData?: Expense[]; 
+  })[];
   onAddTrip: (trip: Trip) => void;
 }
 
@@ -39,6 +43,15 @@ const TripList: React.FC<TripListProps> = ({ trips, onAddTrip }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newTripName, setNewTripName] = useState('');
   const [newTripDescription, setNewTripDescription] = useState('');
+
+  const getUnsettledDebtsCount = (trip: Trip & { membersData?: Member[]; expensesData?: Expense[]; }) => {
+    if (!trip.membersData || !trip.expensesData || trip.membersData.length === 0) return 0;
+    
+    const balances = calculateBalances(trip.expensesData, trip.membersData);
+    const debts = calculateDebts(balances, trip.membersData);
+    
+    return debts.length;
+  };
 
   const handleAddTrip = () => {
     if (!newTripName.trim()) {
@@ -153,9 +166,17 @@ const TripList: React.FC<TripListProps> = ({ trips, onAddTrip }) => {
                 </CardContent>
                 <CardFooter>
                   <div className="flex items-center justify-between w-full">
-                    <p className="text-sm text-muted-foreground bg-primary/10 px-3 py-1 rounded-full">
-                      👥 {trip.members.length} {trip.members.length === 1 ? 'member' : 'members'}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground bg-primary/10 px-3 py-1 rounded-full">
+                        👥 {trip.members.length} {trip.members.length === 1 ? 'member' : 'members'}
+                      </p>
+                      {getUnsettledDebtsCount(trip) > 0 && (
+                        <p className="text-sm text-destructive bg-destructive/10 px-3 py-1 rounded-full flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          {getUnsettledDebtsCount(trip)} unsettled
+                        </p>
+                      )}
+                    </div>
                     <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">→</div>
                   </div>
                 </CardFooter>
