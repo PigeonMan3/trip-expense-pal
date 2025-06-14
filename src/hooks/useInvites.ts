@@ -1,147 +1,200 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { PendingInvite } from '@/components/invites/PendingInvitesList';
-import { TripInvite } from '@/components/invites/TripsList';
 
-// Mock data and functions for now - replace with actual Supabase calls
+export interface PendingInvite {
+  id: string;
+  tripName: string;
+  inviteeEmail?: string;
+  inviteeUsername?: string;
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled';
+  createdAt: string;
+}
 
-const mockPendingInvites: PendingInvite[] = [
-  {
-    id: '1',
-    tripName: 'Tokyo Adventure',
-    inviteeEmail: 'john@example.com',
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    tripName: 'European Backpacking',
-    inviteeUsername: 'sarah_travels',
-    status: 'sending',
-    createdAt: new Date().toISOString(),
-  },
-];
+export interface UserSearchResult {
+  id: string;
+  name: string;
+  email: string;
+}
 
-const mockTrips: TripInvite[] = [
-  {
-    id: '1',
-    name: 'Tokyo Adventure',
-    description: 'Exploring Japan with friends',
-    memberCount: 4,
-    isOwner: true,
-    isCoAdmin: false,
-  },
-  {
-    id: '2',
-    name: 'European Backpacking',
-    memberCount: 6,
-    isOwner: false,
-    isCoAdmin: true,
-  },
-];
-
-// Hooks for pending invites
+// Fetch pending invites for current user
 export const usePendingInvites = () => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['pendingInvites'],
-    queryFn: async (): Promise<PendingInvite[]> => {
-      // TODO: Replace with actual Supabase query
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return mockPendingInvites;
+    queryKey: ['pendingInvites', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from('invitations')
+        .select(`
+          id,
+          status,
+          created_at,
+          invitee_email,
+          trips!inner(name),
+          profiles(name)
+        `)
+        .eq('inviter_id', user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return data?.map((invite: any) => ({
+        id: invite.id,
+        tripName: invite.trips.name,
+        inviteeEmail: invite.invitee_email,
+        inviteeUsername: invite.profiles?.name,
+        status: invite.status,
+        createdAt: invite.created_at,
+      })) || [];
+    },
+    enabled: !!user,
+  });
+};
+
+// Search users by name or email
+export const useUserSearch = (query: string) => {
+  return useQuery({
+    queryKey: ['userSearch', query],
+    queryFn: async () => {
+      if (!query || query.length < 2) return [];
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, name')
+        .ilike('name', `%${query}%`)
+        .limit(5);
+
+      if (error) throw error;
+
+      // Return simplified user data for search results
+      return data?.map((profile: any) => ({
+        id: profile.user_id,
+        name: profile.name,
+        email: '', // We'll handle email separately
+      })) || [];
+    },
+    enabled: query.length >= 2,
+  });
+};
+
+// Send invite mutation
+export const useSendInvite = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ tripId, email, userId }: { 
+      tripId: string; 
+      email?: string; 
+      userId?: string; 
+    }) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('invitations')
+        .insert({
+          trip_id: tripId,
+          inviter_id: user.id,
+          invitee_email: email,
+          invitee_user_id: userId,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Invite sent",
+        description: "The invitation has been sent successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['pendingInvites'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to send invite",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 };
 
+// Cancel invite mutation
 export const useCancelInvite = () => {
-  const queryClient = useQueryClient();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (inviteId: string) => {
-      // TODO: Replace with actual Supabase delete
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return inviteId;
+      const { error } = await supabase
+        .from('invitations')
+        .update({ status: 'cancelled' })
+        .eq('id', inviteId);
+
+      if (error) throw error;
     },
     onSuccess: () => {
+      toast({
+        title: "Invite cancelled",
+        description: "The invitation has been cancelled.",
+      });
       queryClient.invalidateQueries({ queryKey: ['pendingInvites'] });
-      toast({
-        title: 'Invite cancelled',
-        description: 'The invitation has been cancelled successfully.',
-      });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
-        title: 'Error',
-        description: 'Failed to cancel the invitation. Please try again.',
-        variant: 'destructive',
+        title: "Failed to cancel invite",
+        description: error.message,
+        variant: "destructive",
       });
     },
   });
 };
 
-// Hooks for trips
-export const useTrips = () => {
-  return useQuery({
-    queryKey: ['trips'],
-    queryFn: async (): Promise<TripInvite[]> => {
-      // TODO: Replace with actual Supabase query
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return mockTrips;
-    },
-  });
-};
-
-// Hooks for sending invites
-export const useSendInvite = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  return useMutation({
-    mutationFn: async ({ tripId, email }: { tripId: string; email: string }) => {
-      // TODO: Replace with actual Supabase insert
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return { tripId, email };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pendingInvites'] });
-      toast({
-        title: 'Invite sent',
-        description: 'The invitation has been sent successfully.',
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to send the invitation. Please try again.',
-        variant: 'destructive',
-      });
-    },
-  });
-};
-
-// Hooks for adding placeholders
+// Add placeholder mutation
 export const useAddPlaceholder = () => {
-  const queryClient = useQueryClient();
+  const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ tripId, name }: { tripId: string; name: string }) => {
-      // TODO: Replace with actual Supabase insert
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return { tripId, name };
+      if (!user) throw new Error('User not authenticated');
+
+      // Add a dummy member to the trip
+      const { data, error } = await supabase
+        .from('members')
+        .insert({
+          trip_id: tripId,
+          name,
+          status: 'dummy',
+          user_id: null, // No user_id for placeholders
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trips'] });
       toast({
-        title: 'Placeholder added',
-        description: 'The placeholder has been added successfully.',
+        title: "Placeholder added",
+        description: "The placeholder has been added successfully.",
       });
+      queryClient.invalidateQueries({ queryKey: ['trips'] });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
-        title: 'Error',
-        description: 'Failed to add the placeholder. Please try again.',
-        variant: 'destructive',
+        title: "Failed to add placeholder",
+        description: error.message,
+        variant: "destructive",
       });
     },
   });

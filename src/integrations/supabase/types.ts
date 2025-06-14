@@ -105,11 +105,54 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          created_at: string
+          id: string
+          invitee_email: string | null
+          invitee_user_id: string | null
+          inviter_id: string
+          status: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invitee_email?: string | null
+          invitee_user_id?: string | null
+          inviter_id: string
+          status?: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invitee_email?: string | null
+          invitee_user_id?: string | null
+          inviter_id?: string
+          status?: string
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_trip"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       members: {
         Row: {
           created_at: string
           id: string
           name: string
+          role: string | null
+          status: string | null
           trip_id: string
           user_id: string | null
         }
@@ -117,6 +160,8 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          role?: string | null
+          status?: string | null
           trip_id: string
           user_id?: string | null
         }
@@ -124,6 +169,8 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          role?: string | null
+          status?: string | null
           trip_id?: string
           user_id?: string | null
         }
